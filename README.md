@@ -91,7 +91,7 @@ NB : N'hésitez pas à ajouter plus de personnes inscrites aux courses pour rend
 - Java 21 + Spring Boot > 3.0
 - Spring Web, Spring Data JPA, Spring Security
 - Maven
-- Base de données en mémoire H2
+- Base de données H2 en fichier, accessible aussi en TCP pour DBeaver
 - Architecture monolithique en **4 couches distinctes** modélisés par des **modules maven**
 
 ---
