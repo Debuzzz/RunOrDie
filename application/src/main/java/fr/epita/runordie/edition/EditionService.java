@@ -33,9 +33,10 @@ public class EditionService {
     public Edition creerEdition(CreerEditionCommande commande) {
         CreneauHoraire creneauHoraire = new CreneauHoraire(commande.dateDebut(), commande.dateFin());
 
-        boolean chevauchement = editionRepository.trouverEditionsAVenir().stream()
-                .anyMatch(edition -> edition.getCreneauHoraire().chevauche(creneauHoraire));
-        if (chevauchement) {
+        List<CreneauHoraire> creneauxExistants = editionRepository.trouverEditionsAVenir().stream()
+                .map(Edition::getCreneauHoraire)
+                .toList();
+        if (creneauHoraire.chevauche(creneauxExistants)) {
             throw new IllegalArgumentException("Cette édition chevauche une édition déjà existante.");
         }
 
@@ -69,6 +70,41 @@ public class EditionService {
     @Transactional
     public List<Edition> trouverEditionAVenir() {
         return this.editionRepository.trouverEditionsAVenir();
+    }
+
+    @Transactional
+    public List<Edition> editionsInscrites(Email email) {
+        Utilisateur coureur = chargerUtilisateur(email);
+        return editionRepository.trouverEditionsAVenir().stream()
+                .filter(edition -> edition.estInscritCommeCoureur(coureur))
+                .toList();
+    }
+
+    @Transactional
+    public List<Edition> editionsDisponibles(Email email) {
+        Utilisateur coureur = chargerUtilisateur(email);
+        boolean licencie = licenceService.estLicencie(coureur);
+        return editionRepository.trouverEditionsAVenir().stream()
+                .filter(edition -> licencie && edition.peutSinscrireCommeCoureur(coureur))
+                .toList();
+    }
+
+    @Transactional
+    public List<CreneauZombie> creneauxAffectes(Email email) {
+        Utilisateur zombie = chargerUtilisateur(email);
+        return editionRepository.trouverEditionsAVenir().stream()
+                .flatMap(edition -> edition.creneauxAffectesPourZombie(zombie).stream()
+                        .map(creneau -> new CreneauZombie(edition, creneau)))
+                .toList();
+    }
+
+    @Transactional
+    public List<CreneauZombie> creneauxDisponibles(Email email) {
+        Utilisateur zombie = chargerUtilisateur(email);
+        return editionRepository.trouverEditionsAVenir().stream()
+                .flatMap(edition -> edition.creneauxDisponiblesPourZombie(zombie).stream()
+                        .map(creneau -> new CreneauZombie(edition, creneau)))
+                .toList();
     }
 
     @Transactional

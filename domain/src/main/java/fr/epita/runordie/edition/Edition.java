@@ -29,6 +29,10 @@ public class Edition {
             throw new IllegalArgumentException("La date d'une édition doit être dans le futur.");
         }
 
+        if (capaciteCoureurs <= 0 || capaciteZombies <= 0) {
+            throw new IllegalArgumentException("La capacité de coureur et/ou de zombies doit être positive.");
+        }
+
         this.uuid = uuid;
         this.nom = nom;
         this.creneauHoraire = creneauHoraire;
@@ -41,7 +45,7 @@ public class Edition {
     }
 
     public InscriptionCoureur inscrireCoureur(Utilisateur coureur) {
-        validerEditionFuture();
+        validerEditionFutureEtNonAnnulee();
         refuserSiDejaCoureur(coureur);
         refuserSiDejaZombie(coureur);
         validerCapaciteCoureursDisponible();
@@ -52,7 +56,7 @@ public class Edition {
     }
 
     public AffectationZombie affecterZombie(Utilisateur zombie, CreneauHoraire creneau) {
-        validerEditionFuture();
+        validerEditionFutureEtNonAnnulee();
         refuserSiDejaCoureur(zombie);
         refuserSiDejaSurCeCreneau(zombie, creneau);
         validerCapaciteZombiesDisponible(creneau);
@@ -70,66 +74,110 @@ public class Edition {
         return !inscriptionsCoureurs.isEmpty() || !affectationZombies.isEmpty();
     }
 
-    public List<Histogramme> histogrammeZombiesParHeure() {
-        List<Histogramme> histogramme = new ArrayList<>();
-
-        LocalDateTime heureActuelle = creneauHoraire.heureDebut();
-        while (heureActuelle.isBefore(creneauHoraire.heureFin())) {
-            CreneauHoraire tranche = new CreneauHoraire(heureActuelle, heureActuelle.plusHours(1));
-
-            long nombreZombies = affectationZombies.stream()
-                    .filter(affectation -> affectation.getCreneauHoraire().chevauche(tranche))
-                    .count();
-
-            histogramme.add(new Histogramme(tranche, nombreZombies));
-            heureActuelle = heureActuelle.plusHours(1);
-        }
-
-        return histogramme;
+    public int placesCoureursRestantes() {
+        return capaciteCoureurs - inscriptionsCoureurs.size();
     }
 
-    private void validerEditionFuture() {
-        if (!creneauHoraire.heureDebut().isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("Impossible de s'inscrire ou de s'affecter à une édition passée.");
+    public boolean peutSinscrireCommeCoureur(Utilisateur utilisateur) {
+        return estFutureEtNonAnnulee()
+                && !estInscritCommeCoureur(utilisateur)
+                && !estAffecteCommeZombie(utilisateur)
+                && placesCoureursRestantes() > 0;
+    }
+
+    public List<Histogramme> histogrammeZombiesParHeure() {
+        return tranchesHoraires().stream()
+                .map(tranche -> new Histogramme(tranche, affectationZombies.stream()
+                        .filter(affectation -> affectation.getCreneauHoraire().chevauche(tranche))
+                        .count()))
+                .toList();
+    }
+
+    public List<CreneauHoraire> creneauxAffectesPourZombie(Utilisateur zombie) {
+        return affectationZombies.stream()
+                .filter(affectation -> affectation.getUtilisateur().equals(zombie))
+                .map(AffectationZombie::getCreneauHoraire)
+                .toList();
+    }
+
+    public List<CreneauHoraire> creneauxDisponiblesPourZombie(Utilisateur zombie) {
+        if (!estFutureEtNonAnnulee() || estInscritCommeCoureur(zombie)) {
+            return List.of();
+        }
+        return tranchesHoraires().stream()
+                .filter(tranche -> !estDejaAffecteSurCeCreneau(zombie, tranche) && placesZombiesRestantes(tranche) > 0)
+                .toList();
+    }
+
+    public boolean estInscritCommeCoureur(Utilisateur utilisateur) {
+        return inscriptionsCoureurs.stream()
+                .anyMatch(inscription -> inscription.getUtilisateur().equals(utilisateur));
+    }
+
+    private List<CreneauHoraire> tranchesHoraires() {
+        List<CreneauHoraire> tranches = new ArrayList<>();
+        LocalDateTime heureActuelle = creneauHoraire.heureDebut();
+        while (heureActuelle.isBefore(creneauHoraire.heureFin())) {
+            tranches.add(new CreneauHoraire(heureActuelle, heureActuelle.plusHours(1)));
+            heureActuelle = heureActuelle.plusHours(1);
+        }
+        return tranches;
+    }
+
+    private boolean estFutureEtNonAnnulee() {
+        return creneauHoraire.heureDebut().isAfter(LocalDateTime.now()) && !annulee;
+    }
+
+    private void validerEditionFutureEtNonAnnulee() {
+        if (!estFutureEtNonAnnulee()) {
+            throw new IllegalArgumentException("Impossible d'agir sur une édition passée ou annulée.");
         }
     }
 
     private void refuserSiDejaCoureur(Utilisateur utilisateur) {
-        boolean flag = inscriptionsCoureurs.stream()
-                .anyMatch(inscription -> inscription.getUtilisateur().equals(utilisateur));
-        if (flag) {
+        if (estInscritCommeCoureur(utilisateur)) {
             throw new IllegalArgumentException("Cet utilisateur est déjà inscrit comme coureur sur cette édition.");
         }
     }
 
-    private void refuserSiDejaZombie(Utilisateur utilisateur) {
-        boolean flag = affectationZombies.stream()
+    private boolean estAffecteCommeZombie(Utilisateur utilisateur) {
+        return affectationZombies.stream()
                 .anyMatch(affectation -> affectation.getUtilisateur().equals(utilisateur));
-        if (flag) {
+    }
+
+    private void refuserSiDejaZombie(Utilisateur utilisateur) {
+        if (estAffecteCommeZombie(utilisateur)) {
             throw new IllegalArgumentException("Cet utilisateur est déjà affecté comme zombie sur cette édition.");
         }
     }
 
-    private void refuserSiDejaSurCeCreneau(Utilisateur zombie, CreneauHoraire creneau) {
-        boolean flag = affectationZombies.stream()
+    private boolean estDejaAffecteSurCeCreneau(Utilisateur zombie, CreneauHoraire creneau) {
+        return affectationZombies.stream()
                 .anyMatch(affectation -> affectation.getUtilisateur().equals(zombie)
                         && affectation.getCreneauHoraire().equals(creneau));
-        if (flag) {
+    }
+
+    private void refuserSiDejaSurCeCreneau(Utilisateur zombie, CreneauHoraire creneau) {
+        if (estDejaAffecteSurCeCreneau(zombie, creneau)) {
             throw new IllegalArgumentException("Ce zombie est déjà affecté sur ce créneau.");
         }
     }
 
     private void validerCapaciteCoureursDisponible() {
-        if (inscriptionsCoureurs.size() >= capaciteCoureurs) {
+        if (placesCoureursRestantes() <= 0) {
             throw new IllegalArgumentException("La capacité maximale de coureurs est atteinte.");
         }
     }
 
-    private void validerCapaciteZombiesDisponible(CreneauHoraire creneau) {
+    private int placesZombiesRestantes(CreneauHoraire creneau) {
         long zombiesSurCeCreneau = affectationZombies.stream()
                 .filter(affectation -> affectation.getCreneauHoraire().equals(creneau))
                 .count();
-        if (zombiesSurCeCreneau >= capaciteZombies) {
+        return capaciteZombies - (int) zombiesSurCeCreneau;
+    }
+
+    private void validerCapaciteZombiesDisponible(CreneauHoraire creneau) {
+        if (placesZombiesRestantes(creneau) <= 0) {
             throw new IllegalArgumentException("La capacité maximale de zombies est atteinte sur ce créneau.");
         }
     }

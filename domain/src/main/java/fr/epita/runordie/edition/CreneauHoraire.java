@@ -2,6 +2,7 @@ package fr.epita.runordie.edition;
 
 import java.time.Duration;
 import java.time.LocalDateTime;
+import java.util.List;
 
 public record CreneauHoraire(LocalDateTime heureDebut, LocalDateTime heureFin) {
     public CreneauHoraire {
@@ -21,6 +22,10 @@ public record CreneauHoraire(LocalDateTime heureDebut, LocalDateTime heureFin) {
 
     public boolean chevauche(CreneauHoraire autre) {
         return this.heureDebut.isBefore(autre.heureFin) && autre.heureDebut.isBefore(this.heureFin);
+    }
+
+    public boolean chevauche(List<CreneauHoraire> autres) {
+        return autres.stream().anyMatch(this::chevauche);
     }
 
     @Override
