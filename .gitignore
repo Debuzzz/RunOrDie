@@ -3,7 +3,7 @@
 *.ipr
 *.iws
 *.jar
-!/jar/*.jar
+jar/*.jar
 *.sw?
 *~
 .#*
