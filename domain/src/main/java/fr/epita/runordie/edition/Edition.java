@@ -21,12 +21,17 @@ public class Edition {
     private boolean annulee;
 
     public Edition(UUID uuid, String nom, CreneauHoraire creneauHoraire, String lieu, int capaciteCoureurs, int capaciteZombies, List<InscriptionCoureur> inscriptionsCoureurs, List<AffectationZombie> affectationZombies) {
+        this(uuid, nom, creneauHoraire, lieu, capaciteCoureurs, capaciteZombies, inscriptionsCoureurs, affectationZombies, false);
+
+        if (!creneauHoraire.heureDebut().isAfter(LocalDateTime.now())) {
+            throw new IllegalArgumentException("La date d'une édition doit être dans le futur.");
+        }
+    }
+
+    private Edition(UUID uuid, String nom, CreneauHoraire creneauHoraire, String lieu, int capaciteCoureurs, int capaciteZombies, List<InscriptionCoureur> inscriptionsCoureurs, List<AffectationZombie> affectationZombies, boolean annulee) {
         if (uuid == null || nom == null || creneauHoraire == null || lieu == null
                 || inscriptionsCoureurs == null || affectationZombies == null) {
             throw new IllegalArgumentException("Aucun champ d'une Edition ne peut être nul.");
-        }
-        if (!creneauHoraire.heureDebut().isAfter(LocalDateTime.now())) {
-            throw new IllegalArgumentException("La date d'une édition doit être dans le futur.");
         }
 
         if (capaciteCoureurs <= 0 || capaciteZombies <= 0) {
@@ -41,7 +46,11 @@ public class Edition {
         this.capaciteZombies = capaciteZombies;
         this.inscriptionsCoureurs = inscriptionsCoureurs;
         this.affectationZombies = affectationZombies;
-        this.annulee = false;
+        this.annulee = annulee;
+    }
+
+    public static Edition reconstituer(UUID uuid, String nom, CreneauHoraire creneauHoraire, String lieu, int capaciteCoureurs, int capaciteZombies, List<InscriptionCoureur> inscriptionsCoureurs, List<AffectationZombie> affectationZombies, boolean annulee) {
+        return new Edition(uuid, nom, creneauHoraire, lieu, capaciteCoureurs, capaciteZombies, inscriptionsCoureurs, affectationZombies, annulee);
     }
 
     public InscriptionCoureur inscrireCoureur(Utilisateur coureur) {
