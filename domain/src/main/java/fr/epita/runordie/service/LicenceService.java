@@ -1,4 +1,4 @@
-package fr.epita.runordie.infrastructureservice;
+package fr.epita.runordie.service;
 
 import fr.epita.runordie.utilisateur.Utilisateur;
 

@@ -9,4 +9,3 @@ public interface EditionRepository {
     Edition trouverParId(UUID uuid);
     List<Edition> trouverEditionsAVenir();
 }
-

@@ -1,6 +1,6 @@
 package fr.epita.runordie.utilisateur;
 
-import fr.epita.runordie.infrastructureservice.MotDePasseService;
+import fr.epita.runordie.service.MotDePasseService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
