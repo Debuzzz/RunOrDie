@@ -1,7 +1,7 @@
 package fr.epita.runordie.edition;
 
-import fr.epita.runordie.infrastructureservice.LicenceService;
-import fr.epita.runordie.infrastructureservice.NotificationService;
+import fr.epita.runordie.service.LicenceService;
+import fr.epita.runordie.service.NotificationService;
 import fr.epita.runordie.utilisateur.Email;
 import fr.epita.runordie.utilisateur.Utilisateur;
 import fr.epita.runordie.utilisateur.UtilisateurRepository;
