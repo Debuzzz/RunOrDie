@@ -1,8 +1,8 @@
 package fr.epita.runordie.utilisateur;
 
-import java.util.UUID;
+import java.util.Optional;
 
 public interface UtilisateurRepository {
-    Utilisateur sauvegarder(Utilisateur utilisateur);
-    Utilisateur trouverParEmail(Email email);
+    void sauvegarder(Utilisateur utilisateur);
+    Optional<Utilisateur> trouverParEmail(Email email);
 }

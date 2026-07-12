@@ -20,16 +20,16 @@ public class UtilisateurService {
     }
 
     @Transactional
-    public Utilisateur creerUtilisateur(CreerUtilisateurCommande commande) {
+    public void creerUtilisateur(CreerUtilisateurCommande commande) {
         Email email = new Email(commande.email());
 
-        if (this.utilisateurRepository.trouverParEmail(email) != null) {
+        if (this.utilisateurRepository.trouverParEmail(email).isPresent()) {
             throw new IllegalArgumentException("Un utilisateur avec cet email existe déjà.");
         }
 
         MotDePasseHache motDePasseHache = this.motDePasseService.hacher(commande.motDePasseEnClair());
         Utilisateur utilisateur = new Utilisateur(UUID.randomUUID(), email, motDePasseHache, Role.UTILISATEUR);
 
-        return this.utilisateurRepository.sauvegarder(utilisateur);
+        this.utilisateurRepository.sauvegarder(utilisateur);
     }
 }
