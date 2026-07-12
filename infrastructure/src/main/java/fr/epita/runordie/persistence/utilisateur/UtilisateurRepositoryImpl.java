@@ -5,6 +5,8 @@ import fr.epita.runordie.utilisateur.Utilisateur;
 import fr.epita.runordie.utilisateur.UtilisateurRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 @Repository
 public class UtilisateurRepositoryImpl implements UtilisateurRepository {
 
@@ -18,16 +20,16 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
     }
 
     @Override
-    public Utilisateur sauvegarder(Utilisateur utilisateur) {
+    public void sauvegarder(Utilisateur utilisateur) {
         UtilisateurEntity entity = mapper.toEntity(utilisateur);
         UtilisateurEntity saved = jpaRepository.save(entity);
-        return mapper.toDomain(saved);
+        System.out.println("Utilisateur sauvegardé : " + saved);
+        mapper.toDomain(saved);
     }
 
     @Override
-    public Utilisateur trouverParEmail(Email email) {
+    public Optional<Utilisateur> trouverParEmail(Email email) {
         return jpaRepository.findByEmail(email.email())
-                .map(mapper::toDomain)
-                .orElseThrow(() -> new RuntimeException("email not found"));
+                .map(mapper::toDomain);
     }
 }
