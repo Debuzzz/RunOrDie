@@ -9,9 +9,7 @@ public class ApiFederationLicenceService implements LicenceService {
 
     @Override
     public boolean estLicencie(Utilisateur utilisateur) {
-        //TODO:
-        // appel réel à une API externe de fédération sportive
-        // RestTemplate, WebClient, etc.
-        return true; // stub temporaire
+        System.out.println("Utilisateur licentié par défaut");
+        return true;
     }
 }
