@@ -48,6 +48,7 @@ public class EditionMapper {
         entity.setLieu(edition.getLieu());
         entity.setCapaciteCoureurs(edition.getCapaciteCoureurs());
         entity.setCapaciteZombies(edition.getCapaciteZombies());
+        entity.setAnnulee(edition.isAnnulee());
 
         List<InscriptionCoureurEntity> inscriptions = edition.getInscriptionsCoureurs().stream()
                 .map(inscription -> toEntity(inscription, entity))

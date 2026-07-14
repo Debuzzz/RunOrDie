@@ -6,13 +6,11 @@ import fr.epita.runordie.utilisateur.Email;
 import fr.epita.runordie.utilisateur.Utilisateur;
 import fr.epita.runordie.utilisateur.UtilisateurRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 @Service
@@ -45,7 +43,8 @@ public class EditionService {
         Edition edition = new Edition(UUID.randomUUID(), commande.nom(), creneauHoraire, commande.lieu(),
                 commande.capaciteCoureurs(), commande.capaciteZombies(), new ArrayList<>(), new ArrayList<>());
 
-        return editionRepository.sauvegarder(edition);
+        editionRepository.sauvegarder(edition);
+        return edition;
     }
 
     @Transactional
@@ -151,8 +150,7 @@ public class EditionService {
     }
 
     private Utilisateur chargerUtilisateur(Email email) {
-        Utilisateur utilisateur = this.utilisateurRepository.trouverParEmail(email)
-                .orElseThrow(() -> new UsernameNotFoundException("utilisateur non chargé : " + email.email()));
-        return utilisateur;
+        return this.utilisateurRepository.trouverParEmail(email)
+                .orElseThrow(() -> new IllegalArgumentException("L'utilisateur n'existe pas."));
     }
 }

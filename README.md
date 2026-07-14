@@ -4,6 +4,31 @@ Une association d'événementiel sportif et décalé organise des **zombie runs*
 
 ---
 
+
+## Informations
+
+### Lancer l'application
+
+Un fat-jar exécutable est fourni dans `/jar` à la racine :
+
+```
+java -jar jar/app-1.0-SNAPSHOT.jar
+```
+
+La base H2 (fichier, `./data/runordie`) et le jeu de données de démonstration sont réinitialisés à chaque démarrage.
+
+### URLs utiles
+
+- Swagger UI : http://localhost:8080/swagger-ui.html
+- Documentation OpenAPI (JSON) : http://localhost:8080/v3/api-docs
+- Console H2 : http://localhost:8080/h2-console (JDBC URL `jdbc:h2:file:./data/runordie;AUTO_SERVER=TRUE`, user `sa`, pas de mot de passe)
+
+### Authentification
+
+L'API utilise HTTP Basic (email en tant que username, cf. tableau des comptes ci-dessus). Depuis Swagger UI, la connexion se fait via la popup native du navigateur lors du premier appel à un endpoint protégé (pas de bouton "Authorize" dédié).
+
+---
+
 ## Rôles et fonctionnalités
 
 ### Organisateur

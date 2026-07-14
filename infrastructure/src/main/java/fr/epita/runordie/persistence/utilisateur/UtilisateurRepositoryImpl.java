@@ -22,9 +22,7 @@ public class UtilisateurRepositoryImpl implements UtilisateurRepository {
     @Override
     public void sauvegarder(Utilisateur utilisateur) {
         UtilisateurEntity entity = mapper.toEntity(utilisateur);
-        UtilisateurEntity saved = jpaRepository.save(entity);
-        System.out.println("Utilisateur sauvegardé : " + saved);
-        mapper.toDomain(saved);
+        jpaRepository.save(entity);
     }
 
     @Override

@@ -3,10 +3,12 @@ package fr.epita.runordie.exposition.controller;
 import fr.epita.runordie.edition.CreerEditionCommande;
 import fr.epita.runordie.edition.EditionService;
 import fr.epita.runordie.exposition.dto.CreerEditionRequest;
+import fr.epita.runordie.exposition.dto.EditionResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -19,9 +21,14 @@ public class EditionController {
         this.editionService = editionService;
     }
 
+    @GetMapping
+    public List<EditionResponse> listerEditions() {
+        return editionService.trouverEditionAVenir().stream().map(EditionResponse::from).toList();
+    }
+
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public void creerEdition(@RequestBody CreerEditionRequest request) {
+    public EditionResponse creerEdition(@RequestBody CreerEditionRequest request) {
         CreerEditionCommande commande = new CreerEditionCommande(
                 request.nom(),
                 request.dateDebut(),
@@ -30,7 +37,7 @@ public class EditionController {
                 request.capaciteCoureurs(),
                 request.capaciteZombies()
         );
-        editionService.creerEdition(commande);
+        return EditionResponse.from(editionService.creerEdition(commande));
     }
 
     @DeleteMapping("/{id}")
