@@ -1,4 +1,4 @@
-package fr.epita.runordie.exposition.security;
+package fr.epita.runordie.security;
 
 import fr.epita.runordie.utilisateur.Email;
 import fr.epita.runordie.utilisateur.Utilisateur;

@@ -1,18 +1,19 @@
 package fr.epita.runordie.exposition.controller;
 
-import fr.epita.runordie.edition.Edition;
 import fr.epita.runordie.edition.EditionService;
 import fr.epita.runordie.edition.InscrireCoureurCommande;
-import fr.epita.runordie.exposition.dto.InscriptionCoureurRequest;
+import fr.epita.runordie.exposition.dto.EditionResponse;
+import fr.epita.runordie.exposition.dto.InscriptionResponse;
 import fr.epita.runordie.utilisateur.Email;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
-@RequestMapping("/api/coureurs")
+@RequestMapping("/api/coureurs/editions")
 public class CoureurController {
 
     private final EditionService editionService;
@@ -21,24 +22,24 @@ public class CoureurController {
         this.editionService = editionService;
     }
 
-    @GetMapping("/editions/disponibles")
-    public List<Edition> editionsDisponibles(Principal principal) {
+    @GetMapping("/disponibles")
+    public List<EditionResponse> editionsDisponibles(Principal principal) {
         Email email = new Email(principal.getName());
-        return editionService.editionsDisponibles(email);
+        return editionService.editionsDisponibles(email).stream().map(EditionResponse::from).toList();
     }
 
-    @GetMapping("/editions/inscrites")
-    public List<Edition> editionsInscrites(Principal principal) {
+    @GetMapping("/inscrites")
+    public List<EditionResponse> editionsInscrites(Principal principal) {
         Email email = new Email(principal.getName());
-        return editionService.editionsInscrites(email);
+        return editionService.editionsInscrites(email).stream().map(EditionResponse::from).toList();
     }
 
-    @PostMapping("/inscriptions")
+    @PostMapping("/{editionId}/inscriptions")
     @ResponseStatus(HttpStatus.CREATED)
-    public void inscrire(@RequestBody InscriptionCoureurRequest request, Principal principal) {
+    public InscriptionResponse inscrire(@PathVariable UUID editionId, Principal principal) {
         Email email = new Email(principal.getName());
         InscrireCoureurCommande commande =
-                new InscrireCoureurCommande(email, request.editionId());
-        editionService.inscrireCoureur(commande);
+                new InscrireCoureurCommande(email, editionId);
+        return InscriptionResponse.from(editionService.inscrireCoureur(commande));
     }
 }

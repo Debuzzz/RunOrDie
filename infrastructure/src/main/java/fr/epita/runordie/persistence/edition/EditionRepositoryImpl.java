@@ -20,10 +20,9 @@ class EditionRepositoryImpl implements EditionRepository {
     }
 
     @Override
-    public Edition sauvegarder(Edition edition) {
+    public void sauvegarder(Edition edition) {
         EditionEntity entity = mapper.toEntity(edition);
-        EditionEntity saved = jpaRepository.save(entity);
-        return mapper.toDomain(saved);
+        jpaRepository.save(entity);
     }
 
     @Override
@@ -35,7 +34,7 @@ class EditionRepositoryImpl implements EditionRepository {
     public Edition trouverParId(UUID uuid) {
         return jpaRepository.findById(uuid)
                 .map(mapper::toDomain)
-                .orElseThrow(() -> new RuntimeException("uuid not found"));
+                .orElse(null);
     }
 
     @Override

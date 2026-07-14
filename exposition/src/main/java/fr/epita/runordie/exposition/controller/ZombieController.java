@@ -1,15 +1,17 @@
 package fr.epita.runordie.exposition.controller;
 
 import fr.epita.runordie.edition.AffecterZombieCommande;
-import fr.epita.runordie.edition.CreneauZombie;
 import fr.epita.runordie.edition.EditionService;
+import fr.epita.runordie.exposition.dto.AffectationResponse;
 import fr.epita.runordie.exposition.dto.AffectationZombieRequest;
+import fr.epita.runordie.exposition.dto.CreneauZombieResponse;
 import fr.epita.runordie.utilisateur.Email;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/zombies")
@@ -22,23 +24,23 @@ public class ZombieController {
     }
 
     @GetMapping("/creneaux/disponibles")
-    public List<CreneauZombie> creneauxDisponibles(Principal principal) {
+    public List<CreneauZombieResponse> creneauxDisponibles(Principal principal) {
         Email email = new Email(principal.getName());
-        return editionService.creneauxDisponibles(email);
+        return editionService.creneauxDisponibles(email).stream().map(CreneauZombieResponse::from).toList();
     }
 
     @GetMapping("/creneaux/affectes")
-    public List<CreneauZombie> creneauxAffectes(Principal principal) {
+    public List<CreneauZombieResponse> creneauxAffectes(Principal principal) {
         Email email = new Email(principal.getName());
-        return editionService.creneauxAffectes(email);
+        return editionService.creneauxAffectes(email).stream().map(CreneauZombieResponse::from).toList();
     }
 
-    @PostMapping("/affectations")
+    @PostMapping("/editions/{editionId}/affectations")
     @ResponseStatus(HttpStatus.CREATED)
-    public void affecter(@RequestBody AffectationZombieRequest request, Principal principal) {
+    public AffectationResponse affecter(@PathVariable UUID editionId, @RequestBody AffectationZombieRequest request, Principal principal) {
         Email email = new Email(principal.getName());
         AffecterZombieCommande commande = new AffecterZombieCommande(
-                email, request.editionId(), request.heureDebut(), request.heureFin());
-        editionService.affecterZombie(commande);
+                email, editionId, request.heureDebut(), request.heureFin());
+        return AffectationResponse.from(editionService.affecterZombie(commande));
     }
 }
